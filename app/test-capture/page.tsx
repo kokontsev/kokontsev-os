@@ -11,6 +11,10 @@ interface TestCapturePayload {
 interface CaptureResponse {
   ok?: boolean;
   capture_id?: string;
+  classification?: {
+    type?: string;
+    area?: string;
+  };
   routing?: {
     routed: boolean;
     routed_to: string;
@@ -45,6 +49,7 @@ const baseStyles: { [key: string]: CSSProperties } = {
   },
   responseBox: { backgroundColor: '#e8f5e9', padding: '15px', borderRadius: '8px', marginTop: '20px', borderLeft: '4px solid #4caf50' },
   errorBox: { backgroundColor: '#ffebee', padding: '15px', borderRadius: '8px', marginTop: '20px', borderLeft: '4px solid #f44336', color: '#c62828' },
+  classificationBox: { backgroundColor: '#fff8e1', padding: '15px', borderRadius: '8px', marginTop: '20px', borderLeft: '4px solid #f2b01e' },
   routingBox: { backgroundColor: '#f5f7fb', padding: '15px', borderRadius: '8px', marginTop: '20px', borderLeft: '4px solid #607dba' },
   pre: { backgroundColor: 'white', padding: '10px', borderRadius: '4px', overflow: 'auto' },
 };
@@ -61,6 +66,7 @@ export default function TestCapture() {
   const [response, setResponse] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [requestMs, setRequestMs] = useState<number | null>(null);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
@@ -75,27 +81,43 @@ export default function TestCapture() {
     setLoading(true);
     setError('');
     setResponse(null);
+    setRequestMs(null);
 
     try {
-      const res = await fetch('/api/capture', {
+      const startedAt = Date.now();
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 60000);
+      const res = await fetch(new URL('/api/capture', window.location.origin).toString(), {
         method: 'POST',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(message),
       });
+      window.clearTimeout(timeoutId);
+      setRequestMs(Date.now() - startedAt);
 
-      const data = await res.json();
+      const responseText = await res.text();
+      const data = responseText ? JSON.parse(responseText) : null;
 
       if (!res.ok) {
-        setError(data.error || 'Failed to process capture');
+        setError(data?.error || `Failed to process capture. HTTP ${res.status}`);
       } else {
         setResponse(data);
         setMessage({ text: '', source: 'web' });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred';
-      setError(`${message}. Check that Next.js dev server is running on this exact origin and try a hard refresh.`);
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setError('Request timed out after 60 seconds. Check dev server logs and try again.');
+      } else if (err instanceof SyntaxError) {
+        setError('API returned a non-JSON response. Restart the dev server and hard refresh the page.');
+      } else {
+        const message = err instanceof Error ? err.message : 'An error occurred';
+        setError(`${message}. Check that Next.js dev server is running on this exact origin and try a hard refresh.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -143,8 +165,26 @@ export default function TestCapture() {
         </div>
       )}
 
+      {requestMs !== null && (
+        <p>
+          <strong>Request time:</strong> {requestMs} ms
+        </p>
+      )}
+
       {response !== null && (
         <>
+          {isCaptureResponse(response) && response.classification && (
+            <div style={baseStyles.classificationBox}>
+              <h3>Classification</h3>
+              <p>
+                <strong>Type:</strong> {response.classification.type || 'unknown'}
+              </p>
+              <p>
+                <strong>Area:</strong> {response.classification.area || 'unknown'}
+              </p>
+            </div>
+          )}
+
           {isCaptureResponse(response) && response.routing && (
             <div style={baseStyles.routingBox}>
               <h3>Routing</h3>

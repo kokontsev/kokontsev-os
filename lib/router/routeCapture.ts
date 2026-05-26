@@ -79,13 +79,22 @@ export async function routeCapture(input: RouteCaptureInput): Promise<RouteCaptu
       energy: energyToScore(classification.energy_signal),
       load: null,
     };
-  } else if (classification.type === 'decision' || classification.type === 'planning_request') {
+  } else if (classification.type === 'planning_request') {
     routedTo = 'decisions';
     payload = {
       title: classification.title,
       reason: classification.summary,
       area: classification.area,
       status: 'proposed',
+      impact: classification.suggested_next_action,
+    };
+  } else if (classification.type === 'decision') {
+    routedTo = 'decisions';
+    payload = {
+      title: classification.title,
+      reason: classification.summary,
+      area: classification.area,
+      status: 'active',
       impact: classification.suggested_next_action,
     };
   }
