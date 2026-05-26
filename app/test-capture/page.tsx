@@ -8,6 +8,17 @@ interface TestCapturePayload {
   source: string;
 }
 
+interface CaptureResponse {
+  ok?: boolean;
+  capture_id?: string;
+  routing?: {
+    routed: boolean;
+    routed_to: string;
+    routed_id: string | null;
+    warning?: string;
+  };
+}
+
 const baseStyles: { [key: string]: CSSProperties } = {
   container: { maxWidth: '800px', margin: '0 auto' },
   form: { backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '8px', marginBottom: '20px' },
@@ -34,7 +45,12 @@ const baseStyles: { [key: string]: CSSProperties } = {
   },
   responseBox: { backgroundColor: '#e8f5e9', padding: '15px', borderRadius: '8px', marginTop: '20px', borderLeft: '4px solid #4caf50' },
   errorBox: { backgroundColor: '#ffebee', padding: '15px', borderRadius: '8px', marginTop: '20px', borderLeft: '4px solid #f44336', color: '#c62828' },
+  routingBox: { backgroundColor: '#f5f7fb', padding: '15px', borderRadius: '8px', marginTop: '20px', borderLeft: '4px solid #607dba' },
   pre: { backgroundColor: 'white', padding: '10px', borderRadius: '4px', overflow: 'auto' },
+};
+
+const isCaptureResponse = (value: unknown): value is CaptureResponse => {
+  return Boolean(value && typeof value === 'object');
 };
 
 export default function TestCapture() {
@@ -78,7 +94,8 @@ export default function TestCapture() {
         setMessage({ text: '', source: 'web' });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const message = err instanceof Error ? err.message : 'An error occurred';
+      setError(`${message}. Check that Next.js dev server is running on this exact origin and try a hard refresh.`);
     } finally {
       setLoading(false);
     }
@@ -127,10 +144,32 @@ export default function TestCapture() {
       )}
 
       {response !== null && (
-        <div style={baseStyles.responseBox}>
-          <h3>Response</h3>
-          <pre style={baseStyles.pre}>{JSON.stringify(response, null, 2) || ''}</pre>
-        </div>
+        <>
+          {isCaptureResponse(response) && response.routing && (
+            <div style={baseStyles.routingBox}>
+              <h3>Routing</h3>
+              <p>
+                <strong>Status:</strong> {response.routing.routed ? 'routed' : 'not routed'}
+              </p>
+              <p>
+                <strong>Target:</strong> {response.routing.routed_to}
+              </p>
+              <p>
+                <strong>Routed ID:</strong> {response.routing.routed_id || 'none'}
+              </p>
+              {response.routing.warning && (
+                <p>
+                  <strong>Warning:</strong> {response.routing.warning}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div style={baseStyles.responseBox}>
+            <h3>Response</h3>
+            <pre style={baseStyles.pre}>{JSON.stringify(response, null, 2) || ''}</pre>
+          </div>
+        </>
       )}
 
       <section style={{ marginTop: '40px' }}>

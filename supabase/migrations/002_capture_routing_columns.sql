@@ -1,0 +1,25 @@
+-- Routing support for POST /api/capture.
+-- Adds only the columns required to route classified captures into existing tables.
+
+ALTER TABLE public.tasks
+  ADD COLUMN IF NOT EXISTS area TEXT,
+  ADD COLUMN IF NOT EXISTS urgency TEXT,
+  ADD COLUMN IF NOT EXISTS source TEXT;
+
+ALTER TABLE public.tasks
+  ALTER COLUMN priority TYPE TEXT USING priority::TEXT;
+
+ALTER TABLE public.daily_logs
+  ADD COLUMN IF NOT EXISTS log_date DATE DEFAULT CURRENT_DATE,
+  ADD COLUMN IF NOT EXISTS summary TEXT,
+  ADD COLUMN IF NOT EXISTS new_inputs TEXT,
+  ADD COLUMN IF NOT EXISTS energy INTEGER,
+  ADD COLUMN IF NOT EXISTS load INTEGER,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE public.decisions
+  ADD COLUMN IF NOT EXISTS reason TEXT,
+  ADD COLUMN IF NOT EXISTS area TEXT,
+  ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'proposed',
+  ADD COLUMN IF NOT EXISTS impact TEXT,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;

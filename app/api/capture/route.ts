@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/db/client';
 import { classifyCapture } from '@/lib/router/classifyCapture';
+import { routeCapture } from '@/lib/router/routeCapture';
 
 interface CaptureRequest {
   text?: unknown;
@@ -39,10 +40,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: 'failed to save capture' }, { status: 500 });
     }
 
+    const routing = await routeCapture({
+      captureId: data.id,
+      rawText: text,
+      source,
+      classification,
+    });
+
     return NextResponse.json({
       ok: true,
       capture_id: data.id,
       classification,
+      routing,
     });
   } catch (error) {
     return NextResponse.json({ ok: false, error: 'internal error' }, { status: 500 });
