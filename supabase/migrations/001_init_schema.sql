@@ -1,70 +1,132 @@
 -- KokontsevOS v0.1 Database Schema
--- This migration creates the base tables for the system
+-- This migration creates the base tables for the system in schema public
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Use pgcrypto for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- PROFILE table
+CREATE TABLE IF NOT EXISTS public.profile (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username VARCHAR(50) NOT NULL UNIQUE,
   email VARCHAR(100),
-  api_key_hash VARCHAR(255) NOT NULL,
+  bio TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   is_active BOOLEAN DEFAULT true
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-CREATE INDEX IF NOT EXISTS idx_users_api_key_hash ON users(api_key_hash);
-
--- Messages table
-CREATE TABLE IF NOT EXISTS messages (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  content TEXT NOT NULL,
-  content_length INT GENERATED ALWAYS AS (LENGTH(content)) STORED,
-  classification VARCHAR(50) NOT NULL,
-  classification_confidence FLOAT DEFAULT 0,
-  ai_response TEXT,
-  ai_response_tokens INT,
-  language VARCHAR(10) DEFAULT 'ru',
-  source VARCHAR(50) DEFAULT 'api',
-  tags JSONB,
-  custom_metadata JSONB,
+-- GOALS table
+CREATE TABLE IF NOT EXISTS public.goals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id UUID REFERENCES public.profile(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  status VARCHAR(50) DEFAULT 'open',
+  metadata JSONB,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  is_archived BOOLEAN DEFAULT false,
-  is_starred BOOLEAN DEFAULT false
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
-CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_messages_classification ON messages(classification);
-CREATE INDEX IF NOT EXISTS idx_messages_user_created ON messages(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_messages_tags ON messages USING GIN (tags);
-
--- Classifications audit table
-CREATE TABLE IF NOT EXISTS classifications_audit (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
-  predicted_classification VARCHAR(50) NOT NULL,
-  predicted_confidence FLOAT NOT NULL,
-  actual_classification VARCHAR(50),
-  is_correct BOOLEAN,
-  model_used VARCHAR(50) DEFAULT 'gpt-4-mini',
-  tokens_used INT,
-  prompt_tokens INT,
-  completion_tokens INT,
-  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  processing_time_ms INT
+-- PROJECTS table
+CREATE TABLE IF NOT EXISTS public.projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id UUID REFERENCES public.profile(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  status VARCHAR(50) DEFAULT 'active',
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_classifications_audit_user_id ON classifications_audit(user_id);
-CREATE INDEX IF NOT EXISTS idx_classifications_audit_message_id ON classifications_audit(message_id);
-CREATE INDEX IF NOT EXISTS idx_classifications_audit_timestamp ON classifications_audit(timestamp DESC);
-CREATE INDEX IF NOT EXISTS idx_classifications_audit_is_correct ON classifications_audit(is_correct);
+-- TASKS table
+CREATE TABLE IF NOT EXISTS public.tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  status VARCHAR(50) DEFAULT 'todo',
+  priority INTEGER DEFAULT 0,
+  due_date DATE,
+  assignee_id UUID REFERENCES public.profile(id),
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CAPTURES table
+CREATE TABLE IF NOT EXISTS public.captures (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  raw_text TEXT NOT NULL,
+  source TEXT NOT NULL,
+  classification JSONB,
+  type TEXT,
+  area TEXT,
+  project_hint TEXT,
+  action_required BOOLEAN DEFAULT false,
+  processed BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- DAILY_LOGS table
+CREATE TABLE IF NOT EXISTS public.daily_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id UUID REFERENCES public.profile(id) ON DELETE CASCADE,
+  entry_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  content TEXT,
+  mood VARCHAR(50),
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- DECISIONS table
+CREATE TABLE IF NOT EXISTS public.decisions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id UUID REFERENCES public.profile(id) ON DELETE CASCADE,
+  title VARCHAR(255),
+  decision_text TEXT,
+  rationale TEXT,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- WEEKLY_REVIEWS table
+CREATE TABLE IF NOT EXISTS public.weekly_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id UUID REFERENCES public.profile(id) ON DELETE CASCADE,
+  week_start DATE NOT NULL,
+  summary TEXT,
+  insights JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- PLANNING_RULES table
+CREATE TABLE IF NOT EXISTS public.planning_rules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id UUID REFERENCES public.profile(id) ON DELETE CASCADE,
+  name VARCHAR(255),
+  rule JSONB,
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CURRENT_MODE table
+CREATE TABLE IF NOT EXISTS public.current_mode (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id UUID REFERENCES public.profile(id) ON DELETE CASCADE,
+  mode VARCHAR(100) NOT NULL,
+  metadata JSONB,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for foreign keys and common queries
+CREATE INDEX IF NOT EXISTS idx_goals_profile_id ON public.goals(profile_id);
+CREATE INDEX IF NOT EXISTS idx_projects_profile_id ON public.projects(profile_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON public.tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_captures_profile_id ON public.captures(profile_id);
+CREATE INDEX IF NOT EXISTS idx_daily_logs_profile_id ON public.daily_logs(profile_id);
+CREATE INDEX IF NOT EXISTS idx_weekly_reviews_profile_id ON public.weekly_reviews(profile_id);
 
 -- Run this migration in Supabase SQL Editor
--- No down migration needed for v0.1
+-- No down migration provided for v0.1
+
