@@ -1,0 +1,187 @@
+{
+  "user_profile": {
+    "description": "Stable identity and operating context for the user.",
+    "name": "",
+    "preferred_name": "",
+    "language": "ru",
+    "current_life_stage": "",
+    "roles": [],
+    "long_term_direction": "",
+    "example": {
+      "roles": ["student", "developer", "athlete"],
+      "long_term_direction": "Build a sustainable life and work system."
+    }
+  },
+  "life_areas": [
+    {
+      "description": "A major area of life Nate should consider when planning.",
+      "key": "",
+      "title": "",
+      "current_state": "",
+      "desired_state": "",
+      "importance": "",
+      "risk_if_neglected": "",
+      "example": {
+        "key": "english",
+        "title": "English",
+        "importance": "high"
+      }
+    }
+  ],
+  "annual_goals": [
+    {
+      "description": "A goal for the current year.",
+      "title": "",
+      "area": "",
+      "why": "",
+      "target_state": "",
+      "success_criteria": [],
+      "deadline": "",
+      "status": "",
+      "example": {
+        "area": "study",
+        "status": "active"
+      }
+    }
+  ],
+  "quarterly_focus": [
+    {
+      "description": "A focus or priority for the current quarter.",
+      "title": "",
+      "area": "",
+      "desired_result": "",
+      "priority": "",
+      "risks": [],
+      "supporting_projects": [],
+      "example": {
+        "priority": "primary",
+        "supporting_projects": []
+      }
+    }
+  ],
+  "active_projects": [
+    {
+      "description": "A current project Nate should track during planning.",
+      "title": "",
+      "area": "",
+      "goal_link": "",
+      "status": "",
+      "next_milestone": "",
+      "current_blockers": [],
+      "expected_load": "",
+      "example": {
+        "status": "active",
+        "expected_load": "medium"
+      }
+    }
+  ],
+  "constraints": {
+    "description": "Time, energy, health, deadline, and attention constraints.",
+    "time": {
+      "available_hours_per_week": null,
+      "fixed_commitments": [],
+      "best_work_windows": []
+    },
+    "energy": {
+      "usual_energy_pattern": "",
+      "low_energy_signals": [],
+      "recovery_needs": []
+    },
+    "deadlines": [],
+    "hard_limits": [],
+    "example": {
+      "best_work_windows": ["morning"],
+      "hard_limits": ["do not overload sleep"]
+    }
+  },
+  "preferences": {
+    "description": "How Nate should communicate, plan, and prioritize.",
+    "advice_style": "",
+    "planning_style": "",
+    "language": "ru",
+    "detail_level": "",
+    "tone": "",
+    "example": {
+      "advice_style": "direct but calm",
+      "planning_style": "1-3 main actions per day"
+    }
+  },
+  "known_patterns": [
+    {
+      "description": "Observed recurring pattern in behavior, energy, planning, or execution.",
+      "pattern": "",
+      "evidence": [],
+      "impact": "",
+      "countermeasure": "",
+      "confidence": "",
+      "example": {
+        "pattern": "Overloads the plan when energy is low.",
+        "confidence": "medium"
+      }
+    }
+  ],
+  "planning_rules": [
+    {
+      "description": "Rule Nate should apply while creating plans.",
+      "rule": "",
+      "reason": "",
+      "scope": "",
+      "priority": "",
+      "example": {
+        "rule": "If energy is low, reduce the daily plan.",
+        "scope": "daily_planning"
+      }
+    }
+  ],
+  "decision_principles": [
+    {
+      "description": "Principle Nate should use when evaluating tradeoffs.",
+      "principle": "",
+      "reason": "",
+      "applies_to": [],
+      "example": {
+        "principle": "A realistic plan is better than a heroic plan.",
+        "applies_to": ["daily_planning", "weekly_planning"]
+      }
+    }
+  ],
+  "current_focus": {
+    "description": "Current near-term focus for Nate's planning context.",
+    "week": "",
+    "month": "",
+    "quarter": "",
+    "active_mode": "",
+    "must_not_drop": [],
+    "can_pause": [],
+    "example": {
+      "active_mode": "normal",
+      "must_not_drop": ["study", "health"]
+    }
+  },
+  "metrics_to_track": [
+    {
+      "description": "A signal Nate should watch over time.",
+      "metric": "",
+      "area": "",
+      "frequency": "",
+      "target": "",
+      "source": "",
+      "example": {
+        "metric": "english_minutes",
+        "frequency": "daily"
+      }
+    }
+  ],
+  "open_questions": [
+    {
+      "description": "Question that must be answered to improve Nate's context.",
+      "question": "",
+      "area": "",
+      "priority": "",
+      "example": {
+        "question": "Which projects are truly active this quarter?",
+        "priority": "high"
+      }
+    }
+  ]
+}
