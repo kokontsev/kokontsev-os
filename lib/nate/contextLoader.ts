@@ -55,6 +55,7 @@ const DEFAULT_SECTIONS: SectionDefinition[] = [
   { name: '2026 Strategy', relativePath: 'strategy/2026_strategy.md', required: true },
   { name: '2026 Summer Strategy', relativePath: 'strategy/2026_summer_strategy.md', required: true },
   { name: 'Planning Rules', relativePath: 'rules/planning_rules.md', required: true },
+  { name: 'Time Capacity Rules', relativePath: 'rules/time_capacity.md', required: true },
   { name: 'Permissions', relativePath: 'rules/permissions.md', required: true },
   { name: 'Nate Style', relativePath: 'rules/nate_style.md', required: true },
 ];
@@ -62,6 +63,7 @@ const DEFAULT_SECTIONS: SectionDefinition[] = [
 const PROJECT_BASE_SECTIONS: SectionDefinition[] = [
   { name: 'Initial Context Pack', relativePath: 'context_pack.initial.md', required: true },
   { name: 'Planning Rules', relativePath: 'rules/planning_rules.md', required: true },
+  { name: 'Time Capacity Rules', relativePath: 'rules/time_capacity.md', required: true },
   { name: 'Permissions', relativePath: 'rules/permissions.md', required: true },
   { name: 'Nate Style', relativePath: 'rules/nate_style.md', required: true },
 ];

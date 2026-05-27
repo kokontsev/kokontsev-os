@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import { createOpenRouterClient, getOpenRouterModel } from '@/lib/ai/openrouter';
 import {
   captureAreas,
   captureEnergySignals,
@@ -65,23 +65,10 @@ function normalizeClassification(value: unknown): CaptureClassification {
 }
 
 export async function classifyCapture(input: ClassifyCaptureInput): Promise<CaptureClassification> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('Missing OPENROUTER_API_KEY environment variable');
-  }
-
-  const client = new OpenAI({
-    baseURL: 'https://openrouter.ai/api/v1',
-    apiKey,
-    defaultHeaders: {
-      ...(process.env.OPENROUTER_SITE_URL ? { 'HTTP-Referer': process.env.OPENROUTER_SITE_URL } : {}),
-      ...(process.env.OPENROUTER_APP_NAME ? { 'X-OpenRouter-Title': process.env.OPENROUTER_APP_NAME } : {}),
-    },
-  });
+  const client = createOpenRouterClient();
 
   const completion = await client.chat.completions.create({
-    model: process.env.OPENROUTER_MODEL || 'openrouter/free',
+    model: getOpenRouterModel(),
     temperature: 0,
     messages: [
       { role: 'system', content: systemPrompt },
